@@ -112,3 +112,46 @@ def test_correct_selected_choices_raises_when_selection_exceeds_max_raises_excep
     with pytest.raises(Exception):
         question.correct_selected_choices([first.id, second.id])
         
+# Testes com fixture:
+
+@pytest.fixture
+def question_with_multiple_choices():
+    question = Question(title='q1', max_selections=2)
+    first = question.add_choice('a', is_correct=True)
+    second = question.add_choice('b', is_correct=False)
+    third = question.add_choice('c', is_correct=True)
+
+    return {
+        'question': question,
+        'first': first,
+        'second': second,
+        'third': third,
+    }
+
+
+def test_remove_choice_by_id_removes_only_the_requested_choice(question_with_multiple_choices):
+    question = question_with_multiple_choices['question']
+    second = question_with_multiple_choices['second']
+
+    question.remove_choice_by_id(second.id)
+
+    assert len(question.choices) == 2
+    assert [choice.text for choice in question.choices] == ['a', 'c']
+
+
+def test_correct_selected_choices_returns_all_selected_correct_ids(question_with_multiple_choices):
+    question = question_with_multiple_choices['question']
+    first = question_with_multiple_choices['first']
+    third = question_with_multiple_choices['third']
+
+    corrected = question.correct_selected_choices([first.id, third.id])
+
+    assert corrected == [first.id, third.id]
+
+
+def test_remove_all_choices_leaves_question_without_choices(question_with_multiple_choices):
+    question = question_with_multiple_choices['question']
+
+    question.remove_all_choices()
+
+    assert question.choices == []        
